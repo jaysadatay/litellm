@@ -314,6 +314,7 @@ LITELLM_CHAT_PROVIDERS = [
     "lambda_ai",
     "vercel_ai_gateway",
     "ovhcloud",
+    "huggingface_spaces"
 ]
 
 LITELLM_EMBEDDING_PROVIDERS_SUPPORTING_INPUT_ARRAY_OF_TOKENS = [
