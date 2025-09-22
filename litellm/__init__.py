@@ -245,6 +245,7 @@ nebius_key: Optional[str] = None
 heroku_key: Optional[str] = None
 cometapi_key: Optional[str] = None
 ovhcloud_key: Optional[str] = None
+huggingface_spaces_key: Optional[str] = None
 common_cloud_provider_auth_params: dict = {
     "params": ["project", "region_name", "token"],
     "providers": ["vertex_ai", "bedrock", "watsonx", "azure", "vertex_ai_beta"],
@@ -1272,6 +1273,7 @@ from .llms.ovhcloud.embedding.transformation import OVHCloudEmbeddingConfig
 from .main import *  # type: ignore
 from .integrations import *
 from .llms.custom_httpx.async_client_cleanup import close_litellm_async_clients
+from .llms.huggingface_spaces.chat.transformation import HuggingFaceSpacesChatConfig
 from .exceptions import (
     AuthenticationError,
     InvalidRequestError,
