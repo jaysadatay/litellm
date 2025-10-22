@@ -1,0 +1,93 @@
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+model_list:
+  # provider specific wildcard routing
+  - model_name: "anthropic/*"
+    litellm_params:
+      model: "anthropic/*"
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: "openrouter/*"
+    litellm_params:
+      model: "openrouter/*/*"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/gemini-2.0-flash-thinking-exp:free"
+    litellm_params:
+      model: "openrouter/google/gemini-2.0-flash-thinking-exp:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/llama-3.1-nemotron-70b-instruct:free"
+    litellm_params:
+      model: "openrouter/nvidia/llama-3.1-nemotron-70b-instruct:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/gemini-2.5-pro-exp-03-25:free"
+    litellm_params:
+      model: "openrouter/google/gemini-2.5-pro-exp-03-25:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/deepseek-r1-distill-llama-70b:free"
+    litellm_params:
+      model: "openrouter/deepseek/deepseek-r1-distill-llama-70b:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/deepseek-r1-distill-qwen-32b:free"
+    litellm_params:
+      model: "openrouter/deepseek/deepseek-r1-distill-qwen-32b:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/llama-3.3-70b-instruct:free"
+    litellm_params:
+      model: "openrouter/meta-llama/llama-3.3-70b-instruct:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/meta-llama/llama-4-maverick:free"
+    litellm_params:
+      model: "openrouter/meta-llama/llama-4-maverick:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/deepseek-r1-zero:free"
+    litellm_params:
+      model: "openrouter/deepseek/deepseek-r1-zero:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/qwen-2.5-coder-32b-instruct:free"
+    litellm_params:
+      model: "openrouter/qwen/qwen-2.5-coder-32b-instruct:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/gemma-3-27b-it:free"
+    litellm_params:
+      model: "openrouter/google/gemma-3-27b-it:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/deepseek/deepseek-r1:free"
+    litellm_params:
+      model: "openrouter/deepseek/deepseek-r1:free"
+      api_key: os.environ/OR_API_KEY
+  - model_name: "openrouter/deepseek/deepseek-chat:free"
+    litellm_params:
+      model: "openrouter/deepseek/deepseek-chat:free"
+      api_key: os.environ/OR_API_KEY
+  #- model_name: "custom_llamacpp/google_gemma-3-27b-it-Q5_K_M.gguf"
+  #  litellm_params: # Default parameters for this specific model
+  #    model: "custom_llamacpp/google_gemma-3-27b-it-Q5_K_M.gguf"
+      # --- Llama __init__ parameters ---
+      # These are used when Llama() is called in your custom provider
+  #    n_ctx: 32768             # Default context window size from your Gradio UI
+  #    n_gpu_layers: -1         # Offload all possible layers to GPU by default (-1)
+  #    n_batch: 512             # Default batch size
+  #    flash_attn: true         # Enable flash attention if supported by llama-cpp-python build & HW
+      
+      # --- Hugging Face Download parameters (used by custom provider if model not found) ---
+  #    hf_repo_id: "bartowski/google_gemma-3-27b-it-GGUF"
+  #    hf_filename: "google_gemma-3-27b-it-Q5_K_M.gguf" # The filename on Hugging Face Hub
+  #- model_name: "fo::*:static::*" # all requests matching this pattern will be routed to this deployment, example: model="fo::hi::static::hi" will be routed to deployment: "openai/fo::*:static::*"
+  #  litellm_params:
+  #    model: "openai/fo::*:static::*"
+  #    api_key: os.environ/OPENAI_API_KEY
+  # The name you will use in your OpenAI‑compatible calls
+  - model_name: custom/gradio-llama
+    litellm_params:
+      # The model name that will appear in the `model` field of the response
+      model: custom/gradio-llama
+      # Drop all unsupported OpenAI params – we translate them ourselves
+      drop_params: true
+litellm_settings: 
+  success_callback: ["langfuse"]
+  redact_user_api_key_info: true
+  drop_params: true
+  # Register the custom provider
+  custom_provider_map:
+    - provider: gradio-llama          # matches the model_name above
+      custom_handler: my_ai.gradio_llm
