@@ -140,6 +140,29 @@ def get_llm_provider(  # noqa: PLR0915
             model.split("/")[0] != custom_llm_provider
         ):  # handle scenario where model="azure/*" and custom_llm_provider="azure"
             model = custom_llm_provider + "/" + model
+            # ------------------------------------------------------------------
+        # 2.1  Recognise the Gradio‑Space provider
+        # ------------------------------------------------------------------
+        # The user can either pass:
+        #   a) model="gradio-llama"   (custom_llm_provider==None)
+       #   b) model="gradio_space/Meta-Llama-3.1-8B-Instruct.Q6_K.gguf"
+        #   c) custom_llm_provider="gradio_space"
+        # In all cases we want: custom_llm_provider="gradio_space" and
+        #   model = <the actual model name>  (e.g. "Meta-Llama-3.1-8B-Instruct.Q6_K.gguf")
+        #
+        # 2.1.a  If the user passes a fully‑qualified name with the provider prefix
+        if custom_llm_provider == "gradio_space" or model.split("/", 1)[0] == "gradio_space":
+            # Strip the provider prefix if present
+            if model.split("/", 1)[0] == "gradio_space":
+                model = model.split("/", 1)[1]
+            custom_llm_provider = "gradio_space"
+
+        # 2.1.b  If the user passed only the model name (e.g. "gradio-llama")
+        #   – we treat it as a custom provider name.  This is the same logic that
+        #   LiteLLM uses for other custom providers like `custom` or `huggingface`.
+        if custom_llm_provider is None and model in litellm.LITELLM_CHAT_PROVIDERS:
+            # e.g. model="gradio-llama" → custom_llm_provider="gradio_space"
+            custom_llm_provider = "gradio_space"
 
         if api_key and api_key.startswith("os.environ/"):
             dynamic_api_key = get_secret_str(api_key)
@@ -803,6 +826,33 @@ def _get_openai_compatible_provider_info(  # noqa: PLR0915
         ) = litellm.ClarifaiConfig()._get_openai_compatible_provider_info(
             api_base, api_key
         )
+    # ------------------------------------------------------------------
+    # 3.  Register the provider class in the dispatcher
+    # ------------------------------------------------------------------
+    elif custom_llm_provider == "gradio_space":
+        # Lazily import to avoid pulling in the heavy Gradio‑Space code
+        # when the provider is not used.
+        from litellm.llms.gradio_space.chat import GradioSpaceChat
+
+        # Instantiate the provider.  The argument order matches the
+        # BaseConfig constructor used by all providers (see `bytez`, `huggingface`, …).
+        provider_obj = GradioSpaceChat(
+            custom_llm_provider=custom_llm_provider,   # e.g. "gradio_space"
+            model=model,                               # the actual model name (e.g. "Meta‑Llama‑3.1‑8B‑Instruct.Q6_K.gguf")
+            messages=messages,                         # list of messages
+            headers=headers,                           # any extra headers
+            model_response=model_response,             # pre‑built ModelResponse (used for caching)
+            api_key=api_key,                           # API key (if any)
+            api_base=api_base,                         # base URL (if any)
+            acompletion=acompletion,                   # async completion callback
+            logging_obj=logging,                       # the `logging` module (used by BaseConfig)
+            optional_params=optional_params,           # any extra OpenAI parameters
+            litellm_params=litellm_params,             # full LitellmParams object
+            timeout=timeout,                           # request timeout
+            client=client,                             # HTTP client (httpx)
+        )
+
+
 
     if api_base is not None and not isinstance(api_base, str):
         raise Exception("api base needs to be a string. api_base={}".format(api_base))

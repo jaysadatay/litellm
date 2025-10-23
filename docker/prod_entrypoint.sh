@@ -1,5 +1,6 @@
 #!/bin/sh
 
+pip3 install -U -e file:///app/litellm/litellm
 if [ "$SEPARATE_HEALTH_APP" = "1" ]; then
     export LITELLM_ARGS="$@"
     exec supervisord -c /etc/supervisord.conf

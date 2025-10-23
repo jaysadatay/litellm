@@ -1,6 +1,7 @@
 #!/bin/bash
 echo $(pwd)
 
+pip3 install -U -e file:///app/litellm
 # Run the Python migration script
 python3 litellm/proxy/prisma_migration.py
 
